@@ -1,8 +1,8 @@
 const Record = require('../models/Record');
 const ReconciliationResult = require('../models/ReconciliationResult');
 
-async function reconcileUpload(uploadJobId) {
-  // 1️⃣ Get uploaded records
+async function runExactMatch(uploadJobId) {
+  // 1️⃣ Get uploaded records for this job
   const uploadedRecords = await Record.find({
     uploadJobId,
     source: "UPLOADED"
@@ -16,18 +16,17 @@ async function reconcileUpload(uploadJobId) {
       source: "SYSTEM"
     });
 
-    if (systemRecord) {
-      // 3️⃣ Save MATCHED result
-      await ReconciliationResult.create({
-        uploadJobId,
-        uploadedRecordId: uploaded._id,
-        systemRecordId: systemRecord._id,
-        status: "MATCHED"
-      });
-    }
-  }
+    if (!systemRecord) continue;
 
-  console.log("Reconciliation done for upload:", uploadJobId);
+    // 3️⃣ Save reconciliation result
+    await ReconciliationResult.create({
+      transactionId: uploaded.transactionId,
+      systemRecordId: systemRecord._id,
+      uploadedRecordId: uploaded._id,
+      status: "MATCHED",
+      matchedFields: ["transactionId", "amount", "date"]
+    });
+  }
 }
 
-module.exports = reconcileUpload;
+module.exports = { runExactMatch };
