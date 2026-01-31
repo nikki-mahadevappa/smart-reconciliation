@@ -1,6 +1,8 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
 
 // Load models
 require("./models/User");
@@ -25,15 +27,14 @@ app.get("/", (req, res) => {
   res.send("Backend working");
 });
 
-// Connect MongoDB and start server
 mongoose
-  .connect("mongodb://127.0.0.1:27017/reconciliation")
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB connected");
+    console.log('MongoDB connected');
     app.listen(5000, () => {
-      console.log("Server running on port 5000");
+      console.log('Server running on port 5000');
     });
   })
   .catch((err) => {
-    console.error("MongoDB connection error:", err);
+    console.error('MongoDB connection error:', err);
   });
